@@ -38,11 +38,10 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
 	c2 = 0
 	x = x0
 	v = u0
-	v2 = v0
+	v2 = u0
 	i = 1
 
 	while x < x_max:
-		print(x)
 		temp = RK4(x, v, h, func)
 		temp2 = RK4(x, v2, h/2, func)
 		v_half = temp2
@@ -89,18 +88,21 @@ def test_precise_sln(x0, u0, h, x_max):
 		x+=h
 		u = c * math.exp((-3/2)*x)
 		X.append(x)
-		V.append(u)
+		U.append(u)
 	data = [X, U]
 	return data
 
-def draw(data, error_control, func_name):
+def draw(data, error_control, is_test):
 	plt.plot(data[0], data[1], label='Regular step')
 	if error_control:
 		plt.plot(data[2], data[3], label='Half Step')
-	if func_name == 'Test':
+	if is_test:
 		plt.plot(data[len(data)-2], data[len(data)-1], label='Precise solution')
 	plt.xlabel('x')
 	plt.ylabel('y')
 	plt.title("Plot")
 	plt.legend()
 	plt.show()
+
+# def clear():
+# 	plt.clf()
