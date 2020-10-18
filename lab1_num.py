@@ -15,6 +15,8 @@ def RK4(x_i, y_i, h, func):
     k2 = h * func(x_i + h/2, y + k1/2)
     k3 = h * func(x_i + h/2, y + k2/2)
     k4 = h * func(x_i + h, y + k3)
+	if (abs(k1) + abs(k2) + abs(k3) + abs(k4) > 10000):
+		return 10000
     y += (1/6)*(k1 + 2*k2 + 2*k3 + k4)
     return y
 
@@ -33,7 +35,7 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
 	X2.append(x0)
 	V2.append(u0)
 
-	v_max = 10e3
+	#v_max = 10e3
 	c1 = 0
 	c2 = 0
 	x = x0
@@ -46,6 +48,8 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
 		temp2 = RK4(x, v2, h/2, func)
 		v_half = temp2
 		temp2 = RK4(x + h/2, temp2, h/2, func)
+		if temp == 10000 or temp2 == 10000:
+			break
 		if error_control and abs(temp2 - temp) > max_error:
 			h /= 2
 			c1 += 1
@@ -61,6 +65,7 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
 		V2.append(v2)
 		C1.append(c1)
 		H.append(h)
+		Error_arr.append(abs(v2 - v) / 15)
 		if error_control:
 			if abs(v2 - v) < (max_error/32):
 				h *= 2
@@ -69,8 +74,8 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
 				break
 		i += 1
 		C2.append(c2)
-		if abs(v) > v_max:
-			break
+		#if abs(v) > v_max:
+			#break
 
 	data = [X, V, X2, V2, Error_arr, C1, C2]
 	return data
