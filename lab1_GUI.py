@@ -6,9 +6,6 @@ sg.theme('DarkBlue14')   # Add a touch of color
 def make_table(is_test_table, data):
 	col_widths = [5,5,5,5,5,5,5,5]
 	headers = [' № ', 'x', 'v', 'v2', 'v-v2','LE', ' h ', ' C1 ', ' C2 ', 'u', '|u-v|']
-	print(len(data[0]))
-	print(len(data[6]))
-	print(len(data))
 	if is_test_table:
 		col_map = [1 for i in range(len(headers))]
 	else:

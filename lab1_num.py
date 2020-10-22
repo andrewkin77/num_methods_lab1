@@ -124,11 +124,9 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
 
 
 def test_precise_sln(x0, u0, h, x_max):
-    X = []
-    U = []
+    X = [x0]
+    U = [u0]
     # h = 0.001
-    X.append(x0)
-    U.append(u0)
     x = x0
     u = u0
     c = u0 * math.exp((3 / 2) * x0)
