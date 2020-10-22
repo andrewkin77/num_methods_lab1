@@ -91,27 +91,27 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
         temp2 = RK4(x + h / 2, temp2, h / 2, func, v_max)
         if temp == v_max or temp2 == v_max:
             break
-        if error_control and abs(temp2 - temp) > max_error:
+        if error_control and (abs(temp2 - temp) > max_error):
             h /= 2
             c1 += 1
-            pass
-        x += h
-        v = temp
-        v2 = temp2
-        X.append(x)
-        V.append(v)
-        # X2.append(x-h/2)
-        # V2.append(v_half)
-        # X2.append(x)
-        V2.append(v2)
-        C1.append(c1)
-        H.append(h)
-        Error_arr.append(abs(v2 - v) / 15)
-        if error_control:
-            if abs(v2 - v) < (max_error / 32):
-                h *= 2
-                c2 += 1
-        C2.append(c2)
+        else:
+            x += h
+            v = temp
+            v2 = temp2
+            X.append(x)
+            V.append(v)
+            # X2.append(x-h/2)
+            # V2.append(v_half)
+            # X2.append(x)
+            V2.append(v2)
+            C1.append(c1)
+            H.append(h)
+            Error_arr.append(abs(v2 - v) / 15)
+            if error_control:
+                if abs(v2 - v) < (max_error / 32):
+                    h *= 2
+                    c2 += 1
+            C2.append(c2)
         if error_control:
             if i == Nmax:
                 break

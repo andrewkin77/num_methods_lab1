@@ -64,7 +64,7 @@ bottom_frame_layout = [
 	],
 
 	[
-	 sg.Text('Max error:'), sg.InputText('', size = (7,1), disabled = True,
+	 sg.Text('Epsilon:'), sg.InputText('', size = (7,1), disabled = True,
 		 disabled_readonly_background_color= sg.theme_background_color(), key = 'input_e'),
 	 sg.Text('Number of iterations:'), sg.InputText('', size = (7,1), disabled = True,
 		 disabled_readonly_background_color= sg.theme_background_color(), key = 'input_N')
@@ -141,7 +141,7 @@ while True:
 		Nmax = None
 		e = None
 		if values['cbox_bool']:
-		    Nmax = int(values['input_N']) #максимальное кол-во итераций
+		    Nmax = float(values['input_N']) #максимальное кол-во итераций
 		    e = float(values['input_e'])
 
 		if values['RTest']:
