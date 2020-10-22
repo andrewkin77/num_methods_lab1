@@ -80,7 +80,7 @@ input_frame_layout = [
     ],
 
     [
-     sg.Frame(layout=bottom_frame_layout, title='Error comtrol')
+     sg.Frame(layout=bottom_frame_layout, title='Error control')
     ]
 ]
 
@@ -156,6 +156,9 @@ while True:
 		elif values['RFunc1']:
 			data = ln.func_num_sln(x0, u0, x_max, h, Nmax, e,
 				ln.func_1, values['cbox_bool'])
+
+		elif values['RFunc2']:
+			data = ln.RK_4(1, 2, 1000, 0, 0, 5, 2, h)
 
 	if event == 'Plot':
 		ln.draw(data, values['cbox_bool'], values['RTest'])
