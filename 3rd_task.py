@@ -77,7 +77,7 @@ def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, error_co
         C2.append(c2)
         C1.append(c1)
 
-    data = [X, U1, U2, Error_arr, H, C1, C2]
+    data = [X, U1, U1_ds, U2, U2_ds, Error_arr, H, C1, C2]
     plt.plot(U1, U2)
     #    plt.plot(U1, X)
     #    plt.plot(U2, X)
