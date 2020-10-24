@@ -20,22 +20,43 @@ def f_2(x, u_1, u_2, a, b):
     return -(a * (u_2 ** 2) + b * u_1)
 
 
-def RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h):
+def RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h, v_max):
     u1 = np.longdouble(u1_0)
     u2 = np.longdouble(u2_0)
     k_1 = np.longdouble(h * f_1(x_0, u1_0, u2_0, a, b))
+    if abs(k_1) > v_max:
+        return u1_0, u2_0
     l_1 = np.longdouble(h * f_2(x_0, u1_0, u2_0, a, b))
+    if abs(l_1) > v_max:
+        return u1_0, u2_0
     k_2 = np.longdouble(h * f_1(x_0 + h / 2, u1_0 + k_1 / 2, u2_0 + l_1 / 2, a, b))
+    if abs(k_2) > v_max:
+        return u1_0, u2_0
     l_2 = np.longdouble(h * f_2(x_0 + h / 2, u1_0 + k_1 / 2, u2_0 + l_1 / 2, a, b))
+    if abs(l_2) > v_max:
+        return u1_0, u2_0
     k_3 = np.longdouble(h * f_1(x_0 + h / 2, u1_0 + k_2 / 2, u2_0 + l_2 / 2, a, b))
+    if abs(k_3) > v_max:
+        return u1_0, u2_0
     l_3 = np.longdouble(h * f_2(x_0 + h / 2, u1_0 + k_2 / 2, u2_0 + l_2 / 2, a, b))
+    if abs(l_3) > v_max:
+        return u1_0, u2_0
     k_4 = np.longdouble(h * f_1(x_0 + h, u1_0 + k_3, u2_0 + l_3, a, b))
+    if abs(k_4) > v_max:
+        return u1_0, u2_0
     l_4 = np.longdouble(h * f_2(x_0 + h, u1_0 + k_3, u2_0 + l_3, a, b))
+    if abs(l_4) > v_max:
+        return u1_0, u2_0
     u1 += np.longdouble(1 / 6 * (k_1 + 2 * k_2 + 2 * k_3 + k_4))
+    if abs(u1) > v_max:
+        return u1_0, u2_0
     u2 += np.longdouble(1 / 6 * (l_1 + 2 * l_2 + 2 * l_3 + l_4))
+    if abs(u2) > v_max:
+        return u1_0, u2_0
     return u1, u2
 
-def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, error_control):
+
+def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, v_max, error_control):
     c1 = 0
     c2 = 0
     u1_ds = 0
@@ -55,16 +76,16 @@ def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, error_co
     counter = 0
 
     while x_0 <= x_end:
-        u1_0, u2_0 = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h)
+        u1_0, u2_0 = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h, v_max)
         if (error_control):
-            u1_ds, u2_ds = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h / 2)
-            u1_ds, u2_ds = RK4_s(x_0, u1_ds, u2_ds, f_1, f_2, a, b, h / 2)
+            u1_ds, u2_ds = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h / 2, v_max)
+            u1_ds, u2_ds = RK4_s(x_0, u1_ds, u2_ds, f_1, f_2, a, b, h / 2, v_max)
             S_nor = abs(((u1_ds - u1_0) ** 2 + (u2_ds - u2_0) ** 2) ** (1 / 2))
             while S_nor > e:
                 h = h / 2
-                u1_0, u2_0 = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h)
-                u1_ds, u2_ds = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h / 2)
-                u1_ds, u2_ds = RK4_s(x_0, u1_ds, u2_ds, f_1, f_2, a, b, h / 2)
+                u1_0, u2_0 = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h, v_max)
+                u1_ds, u2_ds = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h / 2, v_max)
+                u1_ds, u2_ds = RK4_s(x_0, u1_ds, u2_ds, f_1, f_2, a, b, h / 2, v_max)
                 S_nor = abs(((u1_ds - u1_0) ** 2 + (u2_ds - u2_0) ** 2) ** (1 / 2))
                 c1 += 1
 
@@ -89,6 +110,7 @@ def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, error_co
 
     data = [X, U1, U1_ds, U2, U2_ds, Error_arr, H, C1, C2]
     return data
+
 
 def RK4(x_i, y_i, h, func, v_max):
     y = np.longdouble(y_i)
