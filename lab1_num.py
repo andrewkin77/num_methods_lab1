@@ -54,7 +54,7 @@ def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, error_co
     X = [x_0]
     counter = 0
 
-    while x_0 <= x_end and counter < N_max:
+    while x_0 <= x_end:
         u1_0, u2_0 = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h)
         if (error_control):
             u1_ds, u2_ds = RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h / 2)
@@ -84,6 +84,8 @@ def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, error_co
             c2 += 1
         C2.append(c2)
         C1.append(c1)
+        if error_control and counter == N_max:
+            break
 
     data = [X, U1, U1_ds, U2, U2_ds, Error_arr, H, C1, C2]
     return data
@@ -192,6 +194,3 @@ def draw(data, error_control, is_test):
     plt.show()
 
 
-
-# def clear():
-# 	plt.clf()
