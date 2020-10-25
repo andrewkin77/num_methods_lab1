@@ -56,7 +56,8 @@ def RK4_s(x_0, u1_0, u2_0, f_1, f_2, a, b, h, v_max):
     return u1, u2
 
 
-def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, v_max, error_control):
+def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, error_control):
+    v_max = 10e30
     c1 = 0
     c2 = 0
     u1_ds = 0
@@ -108,7 +109,7 @@ def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, v_max, e
         if error_control and counter == N_max:
             break
 
-    data = [X, U1, U1_ds, U2, U2_ds, Error_arr, H, C1, C2]
+    data = [X, U1, U1_ds, Error_arr, H, C1, C2, U2, U2_ds,]
     return data
 
 

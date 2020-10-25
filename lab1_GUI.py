@@ -39,21 +39,28 @@ def make_table(is_test_table, data):
 
 top_frame_layout = [ 
 	[ 
-	 sg.Text('x0:'), sg.InputText('0', size = (7,1), key = 'input_x0'),
-     sg.Text('Right boundary:'), sg.InputText('5', size = (7,1),
+     sg.Text(' u0:'), sg.InputText('3', size = (7,1), key = 'input_y0'),
+     sg.Text('Boundary:'), sg.InputText('5', size = (7,1),
      	key = 'input_rb'),
+	 sg.Text("a:"), sg.InputText('', size = (7,1), key = 'input_a', disabled=True,
+	 	disabled_readonly_background_color= sg.theme_background_color()),
     ],
-
     [
-     sg.Text('u0:'), sg.InputText('3', size = (7,1), key = 'input_y0'),
-     sg.Text('Step:'), sg.InputText('0.1', size = (7,1), key = 'input_h')
+     sg.Text("u'0:"), sg.InputText('', size = (7,1), key = 'input_u20', disabled=True,
+		disabled_readonly_background_color= sg.theme_background_color()),
+     sg.Text('Step:'), sg.InputText('0.1', size = (7,1), key = 'input_h'),
+	 sg.Text("b:"), sg.InputText('', size = (7,1), key = 'input_b', disabled=True,
+	 	disabled_readonly_background_color= sg.theme_background_color()),
     ],
+  #   [
+	 # sg.Text('x0:'), sg.InputText('0', size = (7,1), key = 'input_x0'),
+  #   ],
 
     [
      sg.Text('Function:'),
-     sg.Radio('Test', "RADIO1", default=True, key='RTest'),
- 	 sg.Radio('Function 1', "RADIO1", key='RFunc1'),
- 	 sg.Radio('Function 2', "RADIO1", key='RFunc2')
+     sg.Radio('Test', "RADIO1", default=True, key='RTest', enable_events=True),
+ 	 sg.Radio('Function 1', "RADIO1", key='RFunc1', enable_events=True),
+ 	 sg.Radio('Function 2', "RADIO1", key='RFunc2', enable_events=True)
  	]
 ]
 
@@ -73,7 +80,7 @@ bottom_frame_layout = [
 
 input_frame_layout = [ 
 	[
-     sg.Frame(layout=top_frame_layout, title = '', border_width=0)
+     sg.Frame(layout=top_frame_layout, title = '', border_width=0),
     ],
 
     [
@@ -119,6 +126,17 @@ while True:
 	        window_main.FindElement('input_e').Update(disabled = True)
 	        window_main.FindElement('input_N').Update(disabled = True)
 
+	if event == 'RFunc2':
+		window_main.FindElement('input_u20').Update(disabled = False)
+		window_main.FindElement('input_a').Update(disabled = False)
+		window_main.FindElement('input_b').Update(disabled = False)
+
+	if event == "RTest" or event == 'RFunc1':
+		window_main.FindElement('input_u20').Update(disabled = True)
+		window_main.FindElement('input_a').Update(disabled = True)
+		window_main.FindElement('input_b').Update(disabled = True)
+
+
 	if event == 'Table':
 		window_table = sg.Window('Table', make_table(is_test_table, data), font=('Avenir 17'))
 		while True:
@@ -134,7 +152,8 @@ while True:
 		# window_main.FindElement('Clear').Update(disabled = False)
 
 		#user input
-		x0 = float(values['input_x0'])
+		# x0 = float(values['input_x0'])
+		x0 = 0;
 		u0 = float(values['input_y0'])
 		x_max = float(values['input_rb'])
 		h = float(values['input_h'])
@@ -155,7 +174,10 @@ while True:
 				ln.func_1, values['cbox_bool'])
 
 		elif values['RFunc2']:
-			data = ln.RK_4(1, 2, 1000, 0, 0, 5, 2, h)
+			u20 = float(values['input_u20'])
+			a = float(values['input_a'])
+			b = float(values['input_b'])
+			data = ln.num_sol_3_task(a, b, Nmax, ln.f_1, ln.f_2, x0, u0, u20, x_max, h, e, values['cbox_bool'])
 
 	if event == 'Plot':
 		ln.draw(data, values['cbox_bool'], values['RTest'])
