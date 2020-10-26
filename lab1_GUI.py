@@ -21,7 +21,7 @@ def make_table(is_test_table, data):
 			table_data[row][6] = '{:.2E}'.format(data[4][row]) # h
 			table_data[row][7] = '{:d}'.format(data[5][row]) # C1
 			table_data[row][8] = '{:d}'.format(data[6][row]) # C2
-			if is_test_table:
+			if is_test_table and sum(data[5]) == 0 and sum(data[6]) == 0:
 				table_data[row][9] = '{:.5f}'.format(data[len(data)-1][row]) # u if is_test
 				table_data[row][10] = '{:.2E}'.format(abs(data[len(data)-1][row] - data[1][row])) # |u - v| if is_test
 
@@ -45,16 +45,21 @@ top_frame_layout = [
 	 sg.Text("a:"), sg.InputText('', size = (7,1), key = 'input_a', disabled=True,
 	 	disabled_readonly_background_color= sg.theme_background_color()),
     ],
+
+    [sg.Text('', size=(1,1), font='Avenir 3')],
+
     [
      sg.Text("u'0:"), sg.InputText('', size = (7,1), key = 'input_u20', disabled=True,
 		disabled_readonly_background_color= sg.theme_background_color()),
-     sg.Text('Step:'), sg.InputText('0.1', size = (7,1), key = 'input_h'),
-	 sg.Text("b:"), sg.InputText('', size = (7,1), key = 'input_b', disabled=True,
+     sg.Text('', size=(2,1)),
+     sg.Text(' Step:'), sg.InputText('0.1', size = (7,1), key = 'input_h'),
+	 sg.Text('b:'), sg.InputText('', size = (7,1), key = 'input_b', disabled=True,
 	 	disabled_readonly_background_color= sg.theme_background_color()),
     ],
   #   [
 	 # sg.Text('x0:'), sg.InputText('0', size = (7,1), key = 'input_x0'),
   #   ],
+    [sg.Text('', size=(1,1), font='Avenir 5')],
 
     [
      sg.Text('Function:'),
@@ -88,18 +93,20 @@ input_frame_layout = [
     ]
 ]
 
+output_frame_layout = [[sg.Text(text="", size = (38,3),font='Avenir 17 bold', key='main_out')]]
+
 layout_main = [  
 			[
 				sg.Frame(layout=input_frame_layout, title='', border_width=0)
 			],
 
             [
-             sg.Text('', size=(1,1), font = ('Avenir 10'))
+             sg.Frame(layout=output_frame_layout, title='Output')
             ],
 
             [
              sg.Button('Exit', size = (6,1), font=('Avenir 15')),
-             sg.Text('', size  = (17,1), font = ('Avenir 15')),
+             sg.Text('', size  = (16,1), font = ('Avenir 15')),
              sg.Button('Table', size = (6,1), font=('Avenir 15'), disabled = True),
              # sg.Button('Clear', size = (6,1), font=('Avenir 15'), disabled = True),
              sg.Button('Plot', size = (4,1), font=('Avenir 15'), disabled = True),
@@ -147,10 +154,10 @@ while True:
 
 	if event == 'Calculate':
 		is_test_table = False
-		window_main.FindElement('Table').Update(disabled = False)
-		window_main.FindElement('Plot').Update(disabled = False)
 		# window_main.FindElement('Clear').Update(disabled = False)
-
+		window_main.FindElement('Table').Update(disabled = True)
+		window_main.FindElement('Plot').Update(disabled = True)
+		window_main.FindElement('Exit').Update(disabled = True)
 		#user input
 		# x0 = float(values['input_x0'])
 		x0 = 0;
@@ -167,7 +174,13 @@ while True:
 			data = ln.func_num_sln(x0, u0, x_max, h, Nmax, e,
 				ln.func_test, values['cbox_bool'])
 			data += ln.test_precise_sln(x0, u0, h, x_max)
-			is_test_table = True
+			if not values['cbox_bool']:
+				Err = [(abs(data[len(data)-1][i] - data[1][i])) for i in range(len(data[1]))]
+				maxErr = max(Err)
+				ind_maxErr = Err.index(maxErr)
+				maxErr = '{:.2E}'.format(maxErr)
+				x_maxErr = '{:.2f}'.format(data[0][ind_maxErr])
+				is_test_table = True
 
 		elif values['RFunc1']:
 			data = ln.func_num_sln(x0, u0, x_max, h, Nmax, e,
@@ -179,8 +192,33 @@ while True:
 			b = float(values['input_b'])
 			data = ln.num_sol_3_task(a, b, Nmax, ln.f_1, ln.f_2, x0, u0, u20, x_max, h, e, values['cbox_bool'])
 
+		n = len(data[0])
+		rem = '{:.1f}'.format(x_max - data[0][len(data[0])-1])
+		maxLE = '{:.2E}'.format(max(data[3]))
+		main_out ="n = {};  b - x_n = {};  max|LE| = {}".format(n, rem, maxLE)
+
+		# Adding error control output
+		if values['cbox_bool']:
+			maxH = max(data[4])
+			minH = min(data[4])
+			ind_maxH = data[4].index(maxH)
+			x_maxH = '{:.2f}'.format(data[0][ind_maxH])
+			ind_minH = data[4].index(minH)
+			x_minH = '{:.2f}'.format(data[0][ind_minH])
+			maxH = '{:.2E}'.format(maxH)
+			minH = '{:.2E}'.format(minH)
+			main_out+="\nmax h = {}, x = {}\nmin h = {}, x = {}".format(maxH, x_maxH, minH, x_minH)
+		# Adding test finc output
+		if values['RTest'] and not values['cbox_bool']:
+			main_out+= "\nmax|V-U| = {}, x = {}".format(maxErr, x_maxErr)
+		window_main.FindElement('main_out').Update(value = main_out)
+
+		window_main.FindElement('Table').Update(disabled = False)
+		window_main.FindElement('Plot').Update(disabled = False)
+		window_main.FindElement('Exit').Update(disabled = False)
+
 	if event == 'Plot':
-		ln.draw(data, values['cbox_bool'], values['RTest'])
+		ln.draw(data, values['cbox_bool'], values['RTest'], values['RFunc2'])
 		
 
 window_main.close()

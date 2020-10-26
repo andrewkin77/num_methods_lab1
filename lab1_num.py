@@ -113,7 +113,7 @@ def num_sol_3_task(a, b, N_max, f_1, f_2, x_0, u1_0, u2_0, x_end, h, e, error_co
                 break
         counter = counter + 1
 
-    data = [X, U1, U1_ds, Error_arr, H, C1, C2, U2, U2_ds, ]
+    data = [X, U1, U1_ds, Error_arr, H, C1, C2, U2, U2_ds]
     return data
 
 
@@ -199,7 +199,7 @@ def test_precise_sln(x0, u0, h, x_max):
     x = x0
     u = u0
     c = u0 * math.exp((3 / 2) * x0)
-    while x < x_max:
+    while x < x_max - h:
         x += h
         u = c * math.exp((-3 / 2) * x)
         X.append(x)
@@ -208,16 +208,35 @@ def test_precise_sln(x0, u0, h, x_max):
     return data
 
 
-def draw(data, error_control, is_test):
-    plt.plot(data[0], data[1], label='Regular step')
+def draw(data, error_control, is_test, is_func2):
+    fig, ax = plt.subplots()
+    if is_func2:
+        fig1, ax1 = plt.subplots()
+        fig2, ax2 = plt.subplots()
+    ax.plot(data[0], data[1], label='Regular step')
+    ax.set_xlabel('X')
+    ax.set_ylabel('V')
+    ax.set_title('V(x) plot')
+    if is_func2:
+        ax1.plot(data[0], data[len(data)-2], label='Regular step', color='tab:green')
+        ax1.set_xlabel('X')
+        ax1.set_ylabel("V'")
+        ax1.set_title("V'(x) plot")
+        ax2.plot(data[1], data[len(data)-2], label='Regular step', color='tab:red')
+        ax2.set_xlabel('V')
+        ax2.set_ylabel("V'")
+        ax2.set_title("V'(v) plot")
     if error_control:
-        plt.plot(data[0], data[2], label='Half Step')
+        ax.plot(data[0], data[2], label='Half Step')
+        if is_func2:
+            ax1.plot(data[0], data[len(data) - 1], label='Half Step', color='tab:purple')
+            ax2.plot(data[2], data[len(data) - 1], label='Half Step', color='tab:pink')
     if is_test:
-        plt.plot(data[len(data) - 2], data[len(data) - 1], label='Precise solution')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title("Plot")
-    plt.legend()
+        ax.plot(data[len(data) - 2], data[len(data) - 1], label='Precise solution')
+    ax.legend()
+    if is_func2:
+        ax1.legend()
+        ax2.legend()
     plt.show()
 
 
