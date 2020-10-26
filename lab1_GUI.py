@@ -21,9 +21,9 @@ def make_table(is_test_table, data):
 			table_data[row][6] = '{:.2E}'.format(data[4][row]) # h
 			table_data[row][7] = '{:d}'.format(data[5][row]) # C1
 			table_data[row][8] = '{:d}'.format(data[6][row]) # C2
-			if is_test_table and sum(data[5]) == 0 and sum(data[6]) == 0:
-				table_data[row][9] = '{:.5f}'.format(data[len(data)-1][row]) # u if is_test
-				table_data[row][10] = '{:.2E}'.format(abs(data[len(data)-1][row] - data[1][row])) # |u - v| if is_test
+			if is_test_table:
+				table_data[row][9] = '{:.5f}'.format(data[7][row]) # u if is_test
+				table_data[row][10] = '{:.2E}'.format(abs(data[7][row] - data[1][row])) # |u - v| if is_test
 
 	layout = [
 				[
@@ -93,7 +93,7 @@ input_frame_layout = [
     ]
 ]
 
-output_frame_layout = [[sg.Text(text="", size = (38,3),font='Avenir 17 bold', key='main_out')]]
+output_frame_layout = [[sg.Text(text="", size = (38,4),font='Avenir 17 bold', key='main_out')]]
 
 layout_main = [  
 			[
@@ -155,67 +155,71 @@ while True:
 	if event == 'Calculate':
 		is_test_table = False
 		# window_main.FindElement('Clear').Update(disabled = False)
-		window_main.FindElement('Table').Update(disabled = True)
-		window_main.FindElement('Plot').Update(disabled = True)
-		window_main.FindElement('Exit').Update(disabled = True)
 		#user input
 		# x0 = float(values['input_x0'])
 		x0 = 0;
-		u0 = float(values['input_y0'])
-		x_max = float(values['input_rb'])
-		h = float(values['input_h'])
-		Nmax = None
-		e = None
-		if values['cbox_bool']:
-		    Nmax = float(values['input_N']) #максимальное кол-во итераций
-		    e = float(values['input_e'])
+		try:
+			u0 = float(values['input_y0'])
+			x_max = float(values['input_rb'])
+			h = float(values['input_h'])
+			Nmax = None
+			e = None
+			if values['cbox_bool']:
+			    Nmax = float(values['input_N']) #максимальное кол-во итераций
+			    e = float(values['input_e'])
+			if values['RFunc2']:
+				u20 = float(values['input_u20'])
+				a = float(values['input_a'])
+				b = float(values['input_b'])
+		except ValueError:
+			sg.Popup('\n  Please fill all text fields  \n', title='Error!', font='Avenir 17')
 
-		if values['RTest']:
-			data = ln.func_num_sln(x0, u0, x_max, h, Nmax, e,
-				ln.func_test, values['cbox_bool'])
-			data += ln.test_precise_sln(x0, u0, h, x_max)
-			if not values['cbox_bool']:
-				Err = [(abs(data[len(data)-1][i] - data[1][i])) for i in range(len(data[1]))]
+		else:
+			window_main.FindElement('Table').Update(disabled = True)
+			window_main.FindElement('Plot').Update(disabled = True)
+			window_main.FindElement('Exit').Update(disabled = True)
+			if values['RTest']:
+				data = ln.func_num_sln(x0, u0, x_max, h, Nmax, e,
+					ln.func_test, values['cbox_bool'], values['RTest'])
+				data += ln.test_precise_sln(x0, u0, h, x_max)
+				Err = [(abs(data[7][i] - data[1][i])) for i in range(len(data[1]))]
 				maxErr = max(Err)
 				ind_maxErr = Err.index(maxErr)
 				maxErr = '{:.2E}'.format(maxErr)
 				x_maxErr = '{:.2f}'.format(data[0][ind_maxErr])
 				is_test_table = True
 
-		elif values['RFunc1']:
-			data = ln.func_num_sln(x0, u0, x_max, h, Nmax, e,
-				ln.func_1, values['cbox_bool'])
+			elif values['RFunc1']:
+				data = ln.func_num_sln(x0, u0, x_max, h, Nmax, e,
+					ln.func_1, values['cbox_bool'], values['RTest'])
 
-		elif values['RFunc2']:
-			u20 = float(values['input_u20'])
-			a = float(values['input_a'])
-			b = float(values['input_b'])
-			data = ln.num_sol_3_task(a, b, Nmax, ln.f_1, ln.f_2, x0, u0, u20, x_max, h, e, values['cbox_bool'])
+			elif values['RFunc2']:
+				data = ln.num_sol_3_task(a, b, Nmax, ln.f_1, ln.f_2, x0, u0, u20, x_max, h, e, values['cbox_bool'])
 
-		n = len(data[0])
-		rem = '{:.1f}'.format(x_max - data[0][len(data[0])-1])
-		maxLE = '{:.2E}'.format(max(data[3]))
-		main_out ="n = {};  b - x_n = {};  max|LE| = {}".format(n, rem, maxLE)
+			n = len(data[0])
+			rem = '{:.1f}'.format(x_max - data[0][len(data[0])-1])
+			maxLE = '{:.2E}'.format(max(data[3]))
+			main_out ="n = {};  b - x_n = {};  max|LE| = {}".format(n, rem, maxLE)
 
-		# Adding error control output
-		if values['cbox_bool']:
-			maxH = max(data[4])
-			minH = min(data[4])
-			ind_maxH = data[4].index(maxH)
-			x_maxH = '{:.2f}'.format(data[0][ind_maxH])
-			ind_minH = data[4].index(minH)
-			x_minH = '{:.2f}'.format(data[0][ind_minH])
-			maxH = '{:.2E}'.format(maxH)
-			minH = '{:.2E}'.format(minH)
-			main_out+="\nmax h = {}, x = {}\nmin h = {}, x = {}".format(maxH, x_maxH, minH, x_minH)
-		# Adding test finc output
-		if values['RTest'] and not values['cbox_bool']:
-			main_out+= "\nmax|V-U| = {}, x = {}".format(maxErr, x_maxErr)
-		window_main.FindElement('main_out').Update(value = main_out)
+			# Adding error control output
+			if values['cbox_bool']:
+				maxH = max(data[4])
+				minH = min(data[4])
+				ind_maxH = data[4].index(maxH)
+				x_maxH = '{:.2f}'.format(data[0][ind_maxH])
+				ind_minH = data[4].index(minH)
+				x_minH = '{:.2f}'.format(data[0][ind_minH])
+				maxH = '{:.2E}'.format(maxH)
+				minH = '{:.2E}'.format(minH)
+				main_out+="\nmax h = {}, x = {}\nmin h = {}, x = {}".format(maxH, x_maxH, minH, x_minH)
+			# Adding test finc output
+			if values['RTest']:
+				main_out+= "\nmax|V-U| = {}, x = {}".format(maxErr, x_maxErr)
+			window_main.FindElement('main_out').Update(value = main_out)
 
-		window_main.FindElement('Table').Update(disabled = False)
-		window_main.FindElement('Plot').Update(disabled = False)
-		window_main.FindElement('Exit').Update(disabled = False)
+			window_main.FindElement('Table').Update(disabled = False)
+			window_main.FindElement('Plot').Update(disabled = False)
+			window_main.FindElement('Exit').Update(disabled = False)
 
 	if event == 'Plot':
 		ln.draw(data, values['cbox_bool'], values['RTest'], values['RFunc2'])

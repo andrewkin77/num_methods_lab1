@@ -135,7 +135,7 @@ def RK4(x_i, y_i, h, func, v_max):
     return y
 
 
-def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
+def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control, is_test):
     v_max = 10e30
     c1 = 0
     c2 = 0
@@ -146,12 +146,15 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
 
     X = [x0]
     V = [u0]
+    U = [u0]
     # X2 = []
     V2 = [u0]
     C1 = [c1]
     C2 = [c2]
     H = [h]
     Error_arr = [abs(v2 - v) / 15]
+    if is_test:
+        c = u0 * math.exp((3 / 2) * x0)
 
     while x <= x_max - h:
         temp = RK4(x, v, h, func, v_max)
@@ -176,6 +179,9 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
             C1.append(c1)
             H.append(h)
             Error_arr.append(abs(v2 - v) / 15)
+            if is_test:
+                u = c * math.exp((-3 / 2) * x)
+                U.append(u)
             if error_control:
                 if abs(v2 - v) < (max_error / 32):
                     h *= 2
@@ -188,7 +194,7 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control):
         # if abs(v) > v_max:
         # break
 
-    data = [X, V, V2, Error_arr, H, C1, C2]
+    data = [X, V, V2, Error_arr, H, C1, C2, U]
     return data
 
 
