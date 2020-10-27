@@ -158,7 +158,7 @@ def func_num_sln(x0, u0, x_max, h, Nmax, max_error, func, error_control, is_test
 
     while x <= x_max - h:
         temp = RK4(x, v, h, func, v_max)
-        temp2 = RK4(x, v2, h / 2, func, v_max)
+        temp2 = RK4(x, v, h / 2, func, v_max)
         # v_half = temp2
         temp2 = RK4(x + h / 2, temp2, h / 2, func, v_max)
         if temp == v_max or temp2 == v_max:
